@@ -1,57 +1,50 @@
 import os
 import json
 
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, abort
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
 from auth import authenticate, User
 from db import get_all_accounts
 from sender import run_mass_send_web_group
 from api.api_send import api
 from admin.upload import admin
-from tg_login_routes import tg_bp
+import scheduler
 
-BASE_DIR = os.path.dirname(__file__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+LOG_DIR = os.path.join(BASE_DIR, "task_log")
+os.makedirs(LOG_DIR, exist_ok=True)
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
-app.secret_key = os.environ.get('SECRET_KEY', 'change-me-in-env')
+app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 
-# Flask-Login setup
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.login_view = "login"
 
-# Ensure runtime directories exist
-os.makedirs(os.path.join(BASE_DIR, 'task_log'), exist_ok=True)
-os.makedirs(os.path.join(BASE_DIR, 'accounts'), exist_ok=True)
+app.register_blueprint(api, url_prefix="/api")
+app.register_blueprint(admin)
+
 
 @login_manager.user_loader
-def load_user(user_id):
+def load_user(user_id: str):
     return User(user_id)
 
-# Blueprints
-app.register_blueprint(api, url_prefix='/api')
-app.register_blueprint(admin, url_prefix='/admin')
-app.register_blueprint(tg_bp, url_prefix='/tg')
 
-@app.route('/favicon.ico')
+@app.route("/favicon.ico")
 def favicon():
-    return send_from_directory(os.path.join(BASE_DIR, 'static'), 'favicon.ico')
+    return send_from_directory(os.path.join(BASE_DIR, "static"), "favicon.ico")
+
 
 # ---- Scheduler (optional) ----
-if os.environ.get('DISABLE_SCHEDULER') != '1':
+if os.environ.get("DISABLE_SCHEDULER", "0") != "1":
     try:
-        import scheduler as _scheduler
-        _scheduler.init(app)
-        group_name = os.environ.get('DEFAULT_GROUP', 'groupA')
-        hour = int(os.environ.get('SCHEDULE_HOUR', '12'))
-        minute = int(os.environ.get('SCHEDULE_MINUTE', '0'))
-        _scheduler.schedule_group_send(group_name=group_name, hour=hour, minute=minute)
-        _scheduler.start()
-        print(f"[scheduler] enabled: group={group_name} time={hour:02d}:{minute:02d} UTC")
+        scheduler.schedule_group_send("groupA", hour=12, minute=0)
+        scheduler.start()
     except Exception as e:
         # Avoid crashing the web service if scheduler can't start
-        print(f"[scheduler] disabled due to error: {e}")
+        print(f"[scheduler] init failed: {e}")
+
 
 # ---- Routes ----
 @app.route("/login", methods=["GET", "POST"])
@@ -111,11 +104,6 @@ def download_log(filename: str):
         abort(404)
     return send_from_directory(LOG_DIR, filename, as_attachment=True)
 
-
-
-@app.get('/healthz')
-def healthz():
-    return {'ok': True}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", "10000"))

@@ -4,7 +4,6 @@ import time
 from datetime import datetime
 
 def run_mass_send_web_group(group_name):
-    os.makedirs('task_log', exist_ok=True)
     with open("config/groups.json", encoding="utf-8") as f:
         groups = json.load(f)
     group = groups.get(group_name)
@@ -34,7 +33,7 @@ def run_mass_send_web_group(group_name):
 
     # 保存日志文件
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    with open(f"task_log/{group_name}_{ts}.json", "w", encoding="utf-8") as f:
+    with open(os.path.join(LOG_DIR, f"{group_name}_{ts}.json"), "w", encoding="utf-8") as f:
         json.dump(log, f, ensure_ascii=False, indent=2)
 
     return "\n".join(log)

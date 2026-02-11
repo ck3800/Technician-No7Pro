@@ -1,51 +1,68 @@
 import json
 import os
-import time
-import hashlib
+from datetime import datetime, timedelta
+import secrets
+import bcrypt
 
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-DATA_DIR = os.environ.get("DATA_DIR", os.path.join(BASE_DIR, "data"))
-os.makedirs(DATA_DIR, exist_ok=True)
+LICENSE_DB = "auth/user_db.json"
+SUPER_ADMIN = "admin"
 
-LICENSE_DB = os.path.join(DATA_DIR, "licenses.json")
-
-
-def _ensure_db():
+def load_db():
     if not os.path.exists(LICENSE_DB):
-        with open(LICENSE_DB, "w", encoding="utf-8") as f:
-            json.dump(
-                {"activated": False, "license_key_sha256": "", "activated_at": 0},
-                f,
-                ensure_ascii=False,
-                indent=2,
-            )
-
-
-def load_license():
-    _ensure_db()
+        return {"licenses": [], "users": []}
     with open(LICENSE_DB, "r", encoding="utf-8") as f:
         return json.load(f)
 
-
-def save_license(data: dict):
-    os.makedirs(os.path.dirname(LICENSE_DB), exist_ok=True)
+def save_db(data):
     with open(LICENSE_DB, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
+def generate_license(days_valid):
+    code = secrets.token_hex(8)
+    db = load_db()
+    db["licenses"].append({
+        "code": code,
+        "days": days_valid,
+        "used": False,
+        "used_by": None,
+        "issued_at": datetime.now().isoformat()
+    })
+    save_db(db)
+    return code
 
-def activate_license(plain_key: str) -> bool:
-    plain_key = (plain_key or "").strip()
-    if not plain_key:
-        return False
-    data = load_license()
-    sha = hashlib.sha256(plain_key.encode("utf-8")).hexdigest()
-    data.update({"activated": True, "license_key_sha256": sha, "activated_at": int(time.time())})
-    save_license(data)
-    return True
+def hash_password(password):
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
+def check_password(password, hashed):
+    return bcrypt.checkpw(password.encode(), hashed.encode())
 
-def is_activated() -> bool:
-    if os.environ.get("LICENSE_BYPASS") == "1":
-        return True
-    data = load_license()
-    return bool(data.get("activated"))
+def activate_license(code, username, password):
+    db = load_db()
+    for lic in db["licenses"]:
+        if lic["code"] == code and not lic["used"]:
+            expire = datetime.now() + timedelta(days=lic["days"])
+            db["users"].append({
+                "username": username,
+                "password": hash_password(password),
+                "expire_at": expire.isoformat()
+            })
+            lic["used"] = True
+            lic["used_by"] = username
+            save_db(db)
+            return True, expire
+    return False, None
+
+def check_user(username, password):
+    db = load_db()
+    for user in db["users"]:
+        if user["username"] == username and check_password(password, user["password"]):
+            expire = datetime.fromisoformat(user["expire_at"])
+            if expire > datetime.now():
+                return True
+    return False
+
+def is_admin(username):
+    return username == SUPER_ADMIN
+
+def get_all_data():
+    return load_db()
