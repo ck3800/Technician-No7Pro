@@ -16,6 +16,10 @@ LOG_DIR = os.path.join(BASE_DIR, "task_log")
 os.makedirs(LOG_DIR, exist_ok=True)
 
 app = Flask(__name__)
+
+# Ensure runtime dirs exist (Render upload may omit empty folders)
+os.makedirs('task_log', exist_ok=True)
+os.makedirs('uploads', exist_ok=True)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 
 login_manager = LoginManager()

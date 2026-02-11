@@ -1,3 +1,5 @@
+from flask import Blueprint
+
 from flask import request, render_template, redirect
 from login_tg import start_login, complete_login
 
@@ -18,3 +20,7 @@ def register_tg_login_routes(app):
             result = complete_login(code, password)
             return f"<pre>{result}</pre>"
         return render_template('tg_code.html')
+
+
+# Compatibility: some deployments may import `tg_bp`; we keep a placeholder Blueprint.
+tg_bp = Blueprint('tg_bp', __name__)
