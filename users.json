@@ -1,3 +1,4 @@
 {
-  "admin": "pbkdf2:sha256:260000$demo$fakehash"
+  "admin": "123456",
+  "test": "abc123"
 }
