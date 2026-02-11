@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, url_for
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from auth import authenticate, User
@@ -9,7 +8,6 @@ import os
 app = Flask(__name__)
 app.secret_key = 'super_secret_tech_007'
 
-# Flask-Login setup
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
