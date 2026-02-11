@@ -49,7 +49,7 @@ def index():
     status = get_all_accounts()
     return render_template('index.html', log=log, status=status)
 
-# ✅ This is the Render-compatible entry point
 if __name__ == '__main__':
+    os.makedirs('uploads', exist_ok=True)
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
