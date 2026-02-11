@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="topnav">
+  <div class="brand"><span class="dot"></span>Seven Tech Pro v4</div>
+  <div class="right">
+    <a href="{{ url_for('index') }}">返回首页</a>
+    <a href="{{ url_for('logout') }}">退出</a>
+  </div>
+</div>
+
+<div class="page">
+  <div class="panel">
+    <h2>任务日志</h2>
+    <div class="small">日志文件存放在 <code>task_log/</code>。如果目录不存在会自动创建。</div>
+    <table class="table" style="margin-top:10px;">
+      <thead><tr><th>文件</th><th>操作</th></tr></thead>
+      <tbody>
+        {% for f in logs %}
+        <tr>
+          <td>{{ f }}</td>
+          <td><a class="small" href="{{ url_for('download_log', filename=f) }}">下载</a></td>
+        </tr>
+        {% endfor %}
+        {% if logs|length == 0 %}
+        <tr><td colspan="2" class="small">暂无日志。</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

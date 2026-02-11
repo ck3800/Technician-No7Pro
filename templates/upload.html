@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="topnav">
+  <div class="brand"><span class="dot"></span>Seven Tech Pro v4</div>
+  <div class="right">
+    <a href="{{ url_for('index') }}">返回首页</a>
+    <a href="{{ url_for('logout') }}">退出</a>
+  </div>
+</div>
+
+<div class="page">
+  <div class="panel">
+    <h2>上传文件</h2>
+    <div class="small">支持上传到服务器本地目录（Render 的文件系统在重启/重新部署后可能会重置）。</div>
+
+    <form method="post" enctype="multipart/form-data" style="margin-top:12px;">
+      <div class="field">
+        <label>选择文件</label>
+        <input type="file" name="file" required>
+      </div>
+      <button class="btn" type="submit" style="max-width:260px;">上传</button>
+    </form>
+
+    {% if message %}
+      <div class="alert" style="background:rgba(34,197,94,.10); border-color:rgba(34,197,94,.22); color:#bbf7d0;">{{ message }}</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
