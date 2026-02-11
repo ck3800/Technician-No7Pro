@@ -1,9 +1,12 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from auth import authenticate, User
-from sender import run_mass_send_web
+from sender import run_mass_send_web_group
 from db import get_all_accounts
-import os
+import os, json
+from api.api_send import api
+from admin.upload import admin
+import scheduler
 
 app = Flask(__name__)
 app.secret_key = 'super_secret_tech_007'
@@ -11,6 +14,12 @@ app.secret_key = 'super_secret_tech_007'
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+app.register_blueprint(api, url_prefix="/api")
+app.register_blueprint(admin)
+
+scheduler.schedule_group_send("groupA", hour=12, minute=0)
+scheduler.start()
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -37,17 +46,25 @@ def load_user(user_id):
 @login_required
 def index():
     log = None
+    with open("config/groups.json", encoding="utf-8") as f:
+        groups = list(json.load(f).keys())
     if request.method == 'POST':
-        group = request.form['target']
-        file = request.files['script']
-        if file.filename:
-            filepath = os.path.join('uploads', file.filename)
-            file.save(filepath)
-            log = run_mass_send_web(filepath, group)
+        group_name = request.form['group']
+        log = run_mass_send_web_group(group_name)
     status = get_all_accounts()
-    return render_template('index.html', log=log, status=status)
+    return render_template('index.html', log=log, status=status, groups=groups)
+
+@app.route("/history")
+@login_required
+def history():
+    files = os.listdir("task_log")
+    return render_template("history.html", history=files)
+
+@app.route("/task_log/<filename>")
+@login_required
+def task_file(filename):
+    return send_from_directory("task_log", filename)
 
 if __name__ == '__main__':
-    os.makedirs('uploads', exist_ok=True)
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)

@@ -1,0 +1,3 @@
+# 在用户登录后调用
+from auth.tg_notify import send_login_notification
+send_login_notification(username, success=True)
