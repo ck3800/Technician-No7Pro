@@ -1,8 +1,0 @@
-services:
-  - type: web
-    name: technician-no7pro
-    runtime: python
-    plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:${PORT:-10000}
-    autoDeploy: true
