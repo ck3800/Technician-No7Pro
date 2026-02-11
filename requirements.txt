@@ -3,3 +3,4 @@ flask_login
 schedule
 pyrogram
 tgcrypto
+gunicorn
