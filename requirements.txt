@@ -1,2 +1,7 @@
+flask
+flask_login
+schedule
+pyrogram
+tgcrypto
 gunicorn
-from api.api_send import api
+apscheduler

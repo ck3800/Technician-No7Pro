@@ -1,19 +1,17 @@
-
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, redirect, url_for
+from flask_login import LoginManager
+import scheduler
 
 app = Flask(__name__)
+app.secret_key = 'secret'
 
-@app.route("/")
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@app.route('/')
 def index():
-    return redirect(url_for("login"))
+    return redirect(url_for('login'))
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route('/login')
 def login():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        return f"欢迎 {username} 登录！（这里只是演示）"
-    return render_template("login.html")
-
-if __name__ == "__main__":
-    app.run()
+    return "登录界面"
