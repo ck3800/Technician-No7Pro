@@ -1,0 +1,6 @@
+flask
+flask-login
+werkzeug
+telethon
+pandas
+openpyxl

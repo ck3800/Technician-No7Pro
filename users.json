@@ -1,0 +1,3 @@
+{
+  "admin": "pbkdf2:sha256:260000$demo$fakehash"
+}
