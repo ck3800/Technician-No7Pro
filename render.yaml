@@ -1,9 +1,8 @@
 services:
   - type: web
-    name: seven-tech-v4
-    env: python
-    buildCommand: ""
-    startCommand: "python app.py"
-    envVars:
-      - key: PORT
-        value: 10000
+    name: technician-no7pro
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:${PORT:-10000}
+    autoDeploy: true
