@@ -1,0 +1,23 @@
+<h2>📋 群发模板列表</h2>
+<table border="1">
+<tr><th>模板名</th><th>脚本路径</th><th>分组</th><th>操作</th></tr>
+{% for t in templates %}
+<tr>
+  <td>{{ t.name }}</td>
+  <td>{{ t.script }}</td>
+  <td>{{ t.group }}</td>
+  <td>
+    <a href="/template/run/{{ t.name }}">🚀 执行</a>
+    <a href="/template/delete/{{ t.name }}">🗑 删除</a>
+  </td>
+</tr>
+{% endfor %}
+</table>
+
+<h3>➕ 添加新模板</h3>
+<form method="POST" action="/template/create">
+  名称: <input name="name"><br>
+  脚本路径: <input name="script"><br>
+  分组名: <input name="group"><br>
+  <button type="submit">保存模板</button>
+</form>

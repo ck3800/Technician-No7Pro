@@ -1,0 +1,10 @@
+<h2>🎫 卡密激活注册</h2>
+<form method="POST">
+  用户名: <input name="username"><br>
+  密码: <input name="password" type="password"><br>
+  卡密: <input name="code"><br>
+  <button type="submit">激活并注册</button>
+</form>
+{% if message %}
+<p>{{ message }}</p>
+{% endif %}
