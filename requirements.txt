@@ -4,3 +4,4 @@ schedule
 pyrogram
 tgcrypto
 gunicorn
+apscheduler
