@@ -1,7 +1,1 @@
 flask
-flask_login
-schedule
-pyrogram
-tgcrypto
-gunicorn
-apscheduler
